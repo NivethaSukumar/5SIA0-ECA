@@ -19,16 +19,20 @@ int main(int argc, char *argv[]) {
 	int32_t x[CHANNELS][DATAPOINTS];
 	uint32_t i, j;
 
+    // void open_set_num_threads(NUM_THREADS);
     read_data(x, CHANNELS, DATAPOINTS);
-
+	omp_set_num_threads(NUM_THREADS);
+     #pragma omp parallel for 
     for (i = 0; i < CHANNELS; i++) {
         printf("Running channel %d...\n", i);
         run_channel(DATAPOINTS, x[i], features[i]);
     }
+	
 
     // Averaging channels
+     #pragma omp parallel for private(i)
+ for (j = 0; j < FEATURE_LENGTH; j++) {
     for (i = 0; i < CHANNELS; i++) {
-        for (j = 0; j < FEATURE_LENGTH; j++) {
             favg[j] += features[i][j] / FEATURE_LENGTH;
         }
     }
