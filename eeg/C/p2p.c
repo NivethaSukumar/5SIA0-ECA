@@ -25,7 +25,7 @@ void p2p(int np, int32_t *x, float *pp, int mindist)
     bool dir_is_up;
 
     dir_is_up = x[1] > x[0];
-    for (i = 0; i < np-1; i++) {
+    for (i = 0; i < np; i++) {
         if (dir_is_up && x[i + 1] < x[i]) {
             // This could be a positive peak
             bool is_peak = true;

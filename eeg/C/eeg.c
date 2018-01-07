@@ -19,20 +19,21 @@ int main(int argc, char *argv[]) {
 	int32_t x[CHANNELS][DATAPOINTS];
 	uint32_t i, j;
 
-    // void open_set_num_threads(NUM_THREADS);
     read_data(x, CHANNELS, DATAPOINTS);
-	omp_set_num_threads(NUM_THREADS);
-     #pragma omp parallel for 
+
+    omp_set_num_threads(NUM_THREADS);
+
+    #pragma omp parallel for
     for (i = 0; i < CHANNELS; i++) {
         printf("Running channel %d...\n", i);
         run_channel(DATAPOINTS, x[i], features[i]);
     }
-	
 
     // Averaging channels
-     #pragma omp parallel for private(i)
- for (j = 0; j < FEATURE_LENGTH; j++) {
-    for (i = 0; i < CHANNELS; i++) {
+    #pragma omp parallel for private(i)
+        for (j = 0; j < FEATURE_LENGTH; j++) {
+        // #pragma omp parallel for reduction(+:favg[:FEATURE_LENGTH])
+            for (i = 0; i < CHANNELS; i++) {
             favg[j] += features[i][j] / FEATURE_LENGTH;
         }
     }
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]) {
 	for (i=0; i<FEATURE_LENGTH; i++)
         printf("Feature %d: %.6f\n", i, favg[i]);
 
+  //  sleep(100);
     return 0;
 }
 
@@ -51,7 +53,8 @@ void read_data(int32_t x[CHANNELS][DATAPOINTS], int nc, int np)
     size_t len = 0;
     ssize_t read;
     int l, c;
-
+    float v;
+    char *tok;
     fp = fopen("EEG.csv", "r");
     if (fp == NULL) {
         printf("Error opening EEG.csv\n");
@@ -61,12 +64,30 @@ void read_data(int32_t x[CHANNELS][DATAPOINTS], int nc, int np)
     // Skip the first line
     getline(&line, &len, fp);
 
+  /* #pragma omp parallel for private(c) ordered
+    for(l=0; l < np ;l++)
+    {
+      #pragma omp ordered
+     {
+      if((read = getline(&line, &len, fp)) != -1)
+      {
+
+          tok = strtok(line, ",");
+          for (c = 0; c < nc; c++) {
+            sscanf(tok, "%f", &v);
+            x[c][l] = (int32_t) round(v);
+            tok = strtok(NULL, ",");
+          }
+        }
+     }
+   } */
+
     l = 0;
     while ((l < np) && (read = getline(&line, &len, fp)) != -1) {
-        char *tok;
+        //char *tok;
         tok = strtok(line, ",");
-        float v;
-
+      //  float v;
+      // #pragma omp parallel for
         for (c = 0; c < nc; c++) {
             sscanf(tok, "%f", &v);
             x[c][l] = (int32_t) round(v);
@@ -81,8 +102,60 @@ void read_data(int32_t x[CHANNELS][DATAPOINTS], int nc, int np)
 void run_channel(int np, int32_t *x, float *features)
 {
     // Butterworth returns np + 1 samples
-	int32_t *X = malloc((np + 1) * sizeof(int32_t));
+	  int32_t *X = malloc((np + 1) * sizeof(int32_t));
 
+    #pragma omp parallel sections
+    {
+      #pragma omp section
+      {
+        printf("    Butterworth filter...\n");
+        bw0_int(np, x, X);
+      }
+
+      #pragma omp section
+      {
+        printf("    Standard features...\n");
+        stafeature(np, X, &features[0]);
+      }
+
+      #pragma omp section
+      {
+        printf("    Peak 2 peak features...\n");
+        p2p(np, X, &features[4], 7);
+      }
+
+      #pragma omp section
+      {
+        printf("    Aproximate Entropy feature...\n");
+        apen(np, X, &features[6], 3, 0.2);
+      }
+
+      #pragma omp section
+      {
+        printf("    Hurst Coefficient feature...\n");
+        hurst(np, X, &features[7]);
+      }
+
+      #pragma omp section
+      {
+        printf("    Power Spectral Density features...\n");
+        power_per_band(np, X, &features[8]);
+      }
+
+    }
+
+    printf("Channel done\n");
+    free(X);
+}
+
+
+
+
+
+/*void run_channel(int np, int32_t *x, float *features)
+{
+    // Butterworth returns np + 1 samples
+	  int32_t *X = malloc((np + 1) * sizeof(int32_t));
     // Clean signal using butterworth
     printf("    Butterworth filter...\n");
     bw0_int(np, x, X);
@@ -105,4 +178,4 @@ void run_channel(int np, int32_t *x, float *features)
 
     printf("Channel done\n");
     free(X);
-}
+}*/
