@@ -5,17 +5,13 @@ double apen_correlation (int np, int32_t *x, unsigned int m, double r)
     bool set;
     unsigned int count;
     double sum = 0;
-    unsigned int i = 0;
-    unsigned int j = 0;
-    unsigned int k = 0;
 
-    #pragma omp parallel for private(j,k) reduction(+:sum)
-    for (i = 0; i <= np - (m + 1) + 1; i++) {
+    for (unsigned int i = 0; i <= np - (m + 1) + 1; i++) {
         count = 0;
-        for (j = 0; j <= np - (m + 1) + 1; j++) {
+        for (unsigned int j = 0; j <= np - (m + 1) + 1; j++) {
             set = false;
 
-            for (k = 0; k < m; k++) {
+            for (unsigned int k = 0; k < m; k++) {
                 if (abs(x[i + k] - x[j + k]) > r) {
                     set = true;
                     break;

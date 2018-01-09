@@ -5,68 +5,27 @@ int32_t abssum(int np, int32_t *x)
 {
     int i;
     int32_t s = 0;
-    #pragma omp parallel for reduction(+:s)
+
     for (i = 0; i < np; i++) {
         s += abs(x[i]);
     }
 
     return s;
 }
-
-/*int32_t abssum(int np, int32_t *x)
-{
-    int i;
-    int32_t s = 0;
-
-    for (i = 0; i < np; i++) {
-        s += abs(x[i]);
-    }
-
-    return s;
-} */
-
 
 float average(int np, int32_t *x)
 {
     int i;
     int32_t s = 0;
-    #pragma omp parallel for reduction(+:s)
+
     for (i = 0; i < np; i++) {
         s += x[i];
     }
 
     return ((float) s) / ((float) np);
 }
-
-/*float average(int np, int32_t *x)
-{
-    int i;
-    int32_t s = 0;
-
-    for (i = 0; i < np; i++) {
-        s += x[i];
-    }
-
-    return ((float) s) / ((float) np);
-} */
 
 float variance(int np, int32_t *x, float avg)
-{
-    int i;
-    float s = 0;
-    float tmp = 0.0;
-
-    // Variance = Sum((x - avg)^2)
-    #pragma omp parallel for private(tmp) reduction(+:s)
-    for (i = 0; i < np; i++) {
-        tmp = x[i] - avg;
-        s += (tmp * tmp);
-    }
-
-    return s / ((float) np);
-}
-
-/*float variance(int np, int32_t *x, float avg)
 {
     int i;
     float s = 0;
@@ -78,7 +37,7 @@ float variance(int np, int32_t *x, float avg)
     }
 
     return s / ((float) np);
-} */
+}
 
 float stddev(int np, int32_t *x, float avg)
 {
@@ -94,7 +53,6 @@ int mean_crosstimes(int np, int32_t *x, float avg)
     int count = 0;
 
     // Count number of zero crossings for (x - avg)
-    #pragma omp parallel for reduction(+:count)
     for (i = 0; i < np; i++) {
         if (negative) {
             if (x[i] > avg) {
@@ -111,30 +69,6 @@ int mean_crosstimes(int np, int32_t *x, float avg)
 
     return count;
 }
-
-/*int mean_crosstimes(int np, int32_t *x, float avg)
-{
-    int i;
-    bool negative = x[0] < avg;
-    int count = 0;
-
-    // Count number of zero crossings for (x - avg)
-    for (i = 0; i < np; i++) {
-        if (negative) {
-            if (x[i] > avg) {
-                negative = false;
-                count++;
-            }
-        } else {
-            if (x[i] < avg) {
-                negative = true;
-                count++;
-            }
-        }
-    }
-
-    return count;
-} */
 
 void stafeature(int np, int32_t *x, float *sta)
 {
