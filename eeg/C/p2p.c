@@ -25,6 +25,7 @@ void p2p(int np, int32_t *x, float *pp, int mindist)
     bool dir_is_up;
 
     dir_is_up = x[1] > x[0];
+    #pragma omp parallel for private(j)
     for (i = 0; i < np; i++) {
         if (dir_is_up && x[i + 1] < x[i]) {
             // This could be a positive peak
@@ -44,6 +45,7 @@ void p2p(int np, int32_t *x, float *pp, int mindist)
         } else if (!dir_is_up && x[i + 1] > x[i]) {
             // This could be a negative peak
             bool is_peak = true;
+            //#pragma omp parallel for
             for (j = max(i - mindist, 0); j < min(i + mindist, np); j++) {
                 if (x[j] < x[i]) {
                     // Not the lowest peak in the area
@@ -61,13 +63,20 @@ void p2p(int np, int32_t *x, float *pp, int mindist)
 
     // Calculate p2p value (and sum)
     peak2peakcount = min(poscount, negcount);
+    #pragma omp parallel for
     for (i = 0; i < peak2peakcount; i++) {
         peak2peak[i] = abs(pospeak[i] - negpeak[i]);
     }
 
     // Calculate mean
-    pp[0] = average(peak2peakcount, peak2peak);
-    pp[1] = stddev(peak2peakcount, peak2peak, pp[0]);
+    #pragma omp parallel sections
+    {
+      #pragma omp section
+      pp[0] = average(peak2peakcount, peak2peak);
+      #pragma omp section
+      pp[1] = stddev(peak2peakcount, peak2peak, pp[0]);
+    }
+
 
     free(pospeak);
     free(negpeak);

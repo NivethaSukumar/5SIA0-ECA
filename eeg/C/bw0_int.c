@@ -14,6 +14,38 @@ static const int32_t b[order+1] = {
 
 void bw0_int(int np, int32_t *x, int32_t *y)
 {
+    int i, j, k;
+    int64_t yy;
+    yy=b[0] * x[0];
+    y[0] = yy / SCALE;
+		#pragma omp parallel for private(j,k)
+    for (i=1;i<order+1;i++)
+    {
+        yy=0;
+				//#pragma omp parallel for reduction(+:yy)
+        for (j=0;j<i+1;j++)
+            yy=yy+b[j]*x[i-j];
+				//#pragma omp parallel for reduction(-:yy)
+        for (k=0;k<i;k++)
+            yy=yy-a[k+1]*y[i-k-1];
+	y[i] = yy / SCALE;
+    }
+		#pragma omp parallel for private(j,k)
+    for (i=order+1;i<np+1;i++)
+    {
+        yy=0;
+				//#pragma omp parallel for reduction(+:yy)
+        for (j=0;j<order+1;j++)
+            yy=yy+b[j]*x[i-j];
+			  //#pragma omp parallel for reduction(-:yy)
+        for (k=0;k<order;k++)
+            yy=yy-a[k+1]*y[i-k-1];
+	y[i] = yy / SCALE;
+    }
+}
+
+/*void bw0_int(int np, int32_t *x, int32_t *y)
+{
     int i, j;
     int64_t yy;
     yy=b[0] * x[0];
@@ -36,4 +68,4 @@ void bw0_int(int np, int32_t *x, int32_t *y)
             yy=yy-a[j+1]*y[i-j-1];
 	y[i] = yy / SCALE;
     }
-}
+}*/
