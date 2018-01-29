@@ -1,0 +1,14 @@
+Feature 0: 0.379464
+Feature 1: 36.829498
+Feature 2: 6224.142578
+Feature 3: 145.142853
+Feature 4: 104.729141
+Feature 5: 80.059616
+Feature 6: 0.011738
+Feature 7: 0.342995
+Feature 8: 94.593994
+Feature 9: 42.762974
+Feature 10: 138.442657
+Feature 11: 479.108002
+Feature 12: 1139.541504
+Feature 13: 1894.449097
