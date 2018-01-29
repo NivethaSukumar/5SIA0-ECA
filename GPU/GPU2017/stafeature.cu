@@ -74,7 +74,7 @@ void gpu_average(int32_t *x, int32_t *blocksums)
 
 
       /*Optimization 1*/
-  /*  for(unsigned int s=1;s<blockDim.x;s*=2){
+    for(unsigned int s=1;s<blockDim.x;s*=2){
         // Because the amount of work reduces, we use the threadId to determine which threads get to execute the summation
         // The other threads will idle in the meantime (They will be masked during the execution of the conditional-part)
         if (threadId % (2*s) == 0 ){
@@ -84,10 +84,10 @@ void gpu_average(int32_t *x, int32_t *blocksums)
         // For each layer of the tree, we have to make sure all threads finish their computations
         // otherwise we could read unsummed results
         __syncthreads();
-    }  */
+    }  
 
 /****Optimization 2***********/
-/*
+
     for(unsigned int s=1; s<blockDim.x;s*=2){
 
       int index = 2*s*threadId;
@@ -97,7 +97,7 @@ void gpu_average(int32_t *x, int32_t *blocksums)
       __syncthreads();
 
     }
-    */
+
 
   /*******Optimization 3*********/
 
@@ -164,7 +164,7 @@ void gpu_abssum(int32_t *x, float *blocksums)
 
 
 /* Optimization 1*/
-/*
+
     for(unsigned int s=1;s<blockDim.x;s*=2){
 
         if (threadId % (2*s) == 0 ){
@@ -173,11 +173,11 @@ void gpu_abssum(int32_t *x, float *blocksums)
 
 
         __syncthreads();
-    } */
+    } 
 
 
     /****Optimization 2***********/
-    /*
+    
         for(unsigned int s=1; s<blockDim.x;s*=2){
 
           int index = 2*s*threadId;
@@ -187,7 +187,7 @@ void gpu_abssum(int32_t *x, float *blocksums)
           __syncthreads();
 
         }
-        */
+        
 /* Optimization 3*/
     for(unsigned int s=blockDim.x/2;s>0;s>>=1){
 
@@ -295,7 +295,7 @@ void cuda_floataddition(float *x, float *blocksums)
     __syncthreads();
 
     /* Optimization 1*/
-    /*
+    
         for(unsigned int s=1;s<blockDim.x;s*=2){
 
             if (threadId % (2*s) == 0 ){
@@ -304,11 +304,11 @@ void cuda_floataddition(float *x, float *blocksums)
 
 
             __syncthreads();
-        } */
+        } 
 
 
         /****Optimization 2***********/
-        /*
+        
             for(unsigned int s=1; s<blockDim.x;s*=2){
 
               int index = 2*s*threadId;
@@ -318,7 +318,7 @@ void cuda_floataddition(float *x, float *blocksums)
               __syncthreads();
 
             }
-            */
+            
       /*Optimization 3*/
 
     for(unsigned int s=blockDim.x/2;s>0;s>>=1){
