@@ -5,7 +5,6 @@
  * the TU/e ES group code base and a Matlab
  * implementation by Mohammad Tahghighi
  */
-
 #include "eeg.h"
 
 int32_t randint(int32_t vmin, int32_t vmax)
@@ -14,10 +13,13 @@ int32_t randint(int32_t vmin, int32_t vmax)
 }
 
 int main(int argc, char *argv[]) {
+  struct timeval st, et;
+  gettimeofday(&st,NULL);
     float features[CHANNELS][FEATURE_LENGTH];
     float favg[FEATURE_LENGTH] = {0};
 	int32_t x[CHANNELS][DATAPOINTS];
 	uint32_t i, j;
+
 
     read_data(x, CHANNELS, DATAPOINTS);
 
@@ -34,7 +36,9 @@ int main(int argc, char *argv[]) {
             favg[j] += features[i][j] / FEATURE_LENGTH;
         }
     }
-
+gettimeofday(&et,NULL);
+int elapsed = ((et.tv_sec - st.tv_sec) * 1000000) + (et.tv_usec - st.tv_usec);
+printf("time: %d micro seconds\n",elapsed);
     printf("\n");
 	for (i=0; i<FEATURE_LENGTH; i++)
         fprintf(stderr,"Feature %d: %.6f\n", i, favg[i]);

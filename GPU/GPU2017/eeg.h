@@ -16,6 +16,8 @@
 #include "hurst.h"
 #include "fft.h"
 
+#include <sys/time.h>
+
 #define CHANNELS 23
 #define DATAPOINTS 256
 #define FEATURE_LENGTH 14
